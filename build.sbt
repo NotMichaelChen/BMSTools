@@ -8,7 +8,8 @@ scalaVersion := Versions.Scala
 
 libraryDependencies ++= Seq(
   "net.ruippeixotog" %% "scala-scraper" % Versions.ScalaScraper,
-  "com.fasterxml.jackson.module" %% "jackson-module-scala" % Versions.JacksonScala
+  "com.fasterxml.jackson.module" %% "jackson-module-scala" % Versions.JacksonScala,
+  "org.scalatest" %% "scalatest" % Versions.ScalaTest % Test
 )
 
 assemblyMergeStrategy in assembly := {
