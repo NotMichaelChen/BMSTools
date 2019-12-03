@@ -19,19 +19,23 @@ case class BMSTableURLs(tableurl: String) {
   // Pull the header url from the webpage
   val headerurl: Try[String] = {
     val browser = JsoupBrowser()
-    val doc = Try(browser.get(tableurl))
-    val rawurl = doc.map(_ >> attr("content")("meta[name=bmstable]"))
-    rawurl.map(BMSTableURLs.parseURL(tableurl, _))
+    Try(browser.get(tableurl))
+      .map(doc => {
+        val rawurl = doc >> attr("content")("meta[name=bmstable]")
+        BMSTableURLs.parseURL(tableurl, rawurl)
+      })
   }
 
   // Pull the data url from the json obtained from the header url
   val dataurl: Try[String] = {
-    val input = headerurl.map(new URL(_).openStream)
-
     val mapper = new ObjectMapper()
     mapper.registerModule(DefaultScalaModule)
-    val parsedJson = input.map(mapper.readValue(_, classOf[Map[String, String]]))
-    parsedJson.map(json => BMSTableURLs.parseURL(tableurl, json("data_url")))
+
+    headerurl.map(header => {
+      val input = new URL(header).openStream
+      val parsedJson = mapper.readValue(input, classOf[Map[String, String]])
+      BMSTableURLs.parseURL(tableurl, parsedJson("data_url"))
+    })
   }
 }
 
