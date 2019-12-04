@@ -1,7 +1,5 @@
 package mzc.bmstools.bmstable
 
-import java.net.InetAddress
-
 import net.ruippeixotog.scalascraper.browser.JsoupBrowser
 import org.scalatest.flatspec.AnyFlatSpec
 import org.scalatest.matchers.should.Matchers

@@ -1,6 +1,6 @@
 package mzc.bmstools.bmstable
 
-import java.net.URL
+import java.net.{URI, URL}
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.module.scala.DefaultScalaModule
@@ -34,7 +34,7 @@ case class BMSTableURLs(tableurl: String) {
     headerurl.map(header => {
       val input = new URL(header).openStream
       val parsedJson = mapper.readValue(input, classOf[Map[String, String]])
-      BMSTableURLs.parseURL(tableurl, parsedJson("data_url"))
+      BMSTableURLs.parseURL(header, parsedJson("data_url"))
     })
   }
 }
@@ -45,9 +45,9 @@ object BMSTableURLs {
     if(rawurl.startsWith("http"))
       rawurl
     else {
-      val base = new URL(baseurl)
-      val newurl = new URL(base, rawurl.stripPrefix("/"))
-      newurl.toString
+      new URI(baseurl)
+        .resolve(rawurl)
+        .toString
     }
   }
 }
