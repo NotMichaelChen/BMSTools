@@ -39,7 +39,7 @@ class BMSTableURLsSpec extends AnyFlatSpec with Matchers {
     tableTest(
       "https://notepara.com/glassist/10k",
       "https://notepara.com/glassist/10k/head.json",
-      "https://notepara.com/glassist/10k/body.json",
+      "https://notepara.com/glassist/10k/body.json"
     )
   }
 

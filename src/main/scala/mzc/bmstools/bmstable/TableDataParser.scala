@@ -1,9 +1,7 @@
 package mzc.bmstools.bmstable
 
-import java.net.URL
-
-import com.fasterxml.jackson.databind.ObjectMapper
-import com.fasterxml.jackson.module.scala.DefaultScalaModule
+import spray.json._
+import DefaultJsonProtocol._
 
 import scala.util.Try
 
@@ -14,14 +12,16 @@ import scala.util.Try
   */
 class TableDataParser(tableurls: BMSTableURLs) {
   // TODO: can we enable caching this data somehow to avoid downloading it every time?
-  val datajson: Try[List[Map[String, String]]] = {
-    val input = tableurls.dataurl.map(new URL(_).openStream)
-
-    val mapper = new ObjectMapper()
-    mapper.registerModule(DefaultScalaModule)
-
-    input.map(mapper.readValue(_, classOf[List[Map[String, String]]]))
+  private val rawDataJson: Try[List[JsValue]] = {
+    for {
+      header <- tableurls.dataurl
+      input  <- Util.downloadWebpage(header)
+      data   <- Try(input.parseJson)
+      // Assume a list of objects
+    } yield data.convertTo[List[JsValue]]
   }
+
+  val datajson: Try[List[Map[String, String]]] = rawDataJson.map(_.map(_.convertTo[Map[String, String]]))
 
   /**
     * Attempt to obtain the list of charts from the downloaded json, returning only the default attributes
@@ -29,14 +29,26 @@ class TableDataParser(tableurls: BMSTableURLs) {
     * @return The list of table entries
     */
   def getDefaultData: Try[List[TableEntry]] = {
-    datajson.map(_.map(
-      listentry => TableEntry(listentry("md5"), listentry("level"))
-    ))
+    datajson.map(
+      _.map(
+        listentry => TableEntry(listentry("md5"), listentry("level"))
+      )
+    )
+  }
+
+  /**
+    * Attempt to obtain the list of charts from the data json decoded as a list of the provided type `A`
+    *
+    * @tparam A The type to decode each chart into
+    * @return The list of table entries decoded as a list of `A`'s
+    */
+  def getData[A <: BaseTableEntry: JsonReader]: Try[List[A]] = {
+    rawDataJson.map(_.map(_.convertTo[A]))
   }
 }
 
 object TableDataParser {
-  //
+
   /**
     * Construct a BMSTable object from a single table url
     *
