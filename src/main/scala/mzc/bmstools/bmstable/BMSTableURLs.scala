@@ -26,15 +26,23 @@ case class BMSTableURLs(tableurl: String) {
       })
   }
 
-  // Pull the data url from the json obtained from the header url
-  val dataurl: Try[String] = {
+  // Download the header data and parse it as a json object
+  val headerData: Try[Map[String, JsValue]] = {
     for {
       header   <- headerurl
       rawInput <- Util.downloadWebpage(header)
       // TODO: Hacky, find alternative to cleaning input
       input  = rawInput.dropWhile(_ != '{')
       parsed = input.parseJson.convertTo[Map[String, JsValue]]
-      url    = BMSTableURLs.parseURL(header, parsed("data_url").convertTo[String])
+    } yield parsed
+  }
+
+  // Pull the data url from the json obtained from the header url
+  val dataurl: Try[String] = {
+    for {
+      header <- headerurl
+      data   <- headerData
+      url = BMSTableURLs.parseURL(header, data("data_url").convertTo[String])
     } yield url
   }
 }

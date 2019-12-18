@@ -7,7 +7,7 @@ import spray.json.{DefaultJsonProtocol, RootJsonFormat}
 
 import scala.util.Try
 
-class TableDataParserSpec extends AnyFlatSpec with Matchers {
+class TableParserSpec extends AnyFlatSpec with Matchers {
   // TODO: Add tests for rest of methods
 
   def serverAvailable(url: String): Boolean = {
@@ -26,7 +26,7 @@ class TableDataParserSpec extends AnyFlatSpec with Matchers {
 
     import CustomTableEntryProtocol._
 
-    val parser         = TableDataParser("http://rattoto10.jounin.jp/table_insane.html")
+    val parser         = TableParser("http://rattoto10.jounin.jp/table_insane.html")
     val dataTry        = parser.getData[CustomTableEntry]
     val defaultDataTry = parser.getDefaultData
 

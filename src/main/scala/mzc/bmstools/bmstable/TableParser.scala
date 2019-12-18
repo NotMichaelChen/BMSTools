@@ -10,7 +10,7 @@ import scala.util.Try
   *
   * @param tableurls The header/data urls associated with the table
   */
-class TableDataParser(tableurls: BMSTableURLs) {
+class TableParser(tableurls: BMSTableURLs) {
   // TODO: can we enable caching this data somehow to avoid downloading it every time?
   private val rawDataJson: Try[List[JsValue]] = {
     for {
@@ -21,7 +21,21 @@ class TableDataParser(tableurls: BMSTableURLs) {
     } yield data.convertTo[List[JsValue]]
   }
 
+  val headerjson: Try[Map[String, JsValue]]    = tableurls.headerData
   val datajson: Try[List[Map[String, String]]] = rawDataJson.map(_.map(_.convertTo[Map[String, String]]))
+
+  /**
+    * Get an attribute from the header
+    *
+    * @param attr The name of the attribute to get
+    * @return The value associated with that attribute
+    */
+  def getHeaderAttribute(attr: String): Option[JsValue] = {
+    for {
+      data      <- tableurls.headerData.toOption
+      attribute <- data.get(attr)
+    } yield attribute
+  }
 
   /**
     * Attempt to obtain the list of charts from the downloaded json, returning only the default attributes
@@ -47,7 +61,7 @@ class TableDataParser(tableurls: BMSTableURLs) {
   }
 }
 
-object TableDataParser {
+object TableParser {
 
   /**
     * Construct a BMSTable object from a single table url
@@ -55,7 +69,7 @@ object TableDataParser {
     * @param tableurl The url of the main bms table
     * @return A TableParser object
     */
-  def apply(tableurl: String): TableDataParser = {
-    new TableDataParser(new BMSTableURLs(tableurl))
+  def apply(tableurl: String): TableParser = {
+    new TableParser(new BMSTableURLs(tableurl))
   }
 }
