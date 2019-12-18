@@ -2,7 +2,8 @@ import mzc.sbt.Versions
 
 name := "BMSTools"
 
-version := "2.0"
+organization := "mzc.bmstools"
+version := "3.0"
 
 scalaVersion := Versions.Scala
 
