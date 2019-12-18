@@ -21,8 +21,8 @@ class TableParser(tableurls: BMSTableURLs) {
     } yield data.convertTo[List[JsValue]]
   }
 
-  val headerjson: Try[Map[String, JsValue]]    = tableurls.headerData
-  val datajson: Try[List[Map[String, String]]] = rawDataJson.map(_.map(_.convertTo[Map[String, String]]))
+  val headerjson: Try[Map[String, JsValue]]     = tableurls.headerData
+  val datajson: Try[List[Map[String, JsValue]]] = rawDataJson.flatMap(data => Try(data.map(_.convertTo[Map[String, JsValue]])))
 
   /**
     * Get an attribute from the header
@@ -43,10 +43,13 @@ class TableParser(tableurls: BMSTableURLs) {
     * @return The list of table entries
     */
   def getDefaultData: Try[List[TableEntry]] = {
-    datajson.map(
-      _.map(
-        listentry => TableEntry(listentry("md5"), listentry("level"))
-      )
+    datajson.flatMap(
+      data =>
+        Try(
+          data.map(
+            listentry => TableEntry(listentry("md5").convertTo[String], listentry("level").convertTo[String])
+          )
+        )
     )
   }
 
@@ -57,7 +60,7 @@ class TableParser(tableurls: BMSTableURLs) {
     * @return The list of table entries decoded as a list of `A`'s
     */
   def getData[A <: BaseTableEntry: JsonReader]: Try[List[A]] = {
-    rawDataJson.map(_.map(_.convertTo[A]))
+    rawDataJson.flatMap(data => Try(data.map(_.convertTo[A])))
   }
 }
 
